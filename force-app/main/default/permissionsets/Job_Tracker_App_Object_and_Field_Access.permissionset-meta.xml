@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Gives read and edit access to objects and fields related to the job tracker app.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Job Tracker App - Object and Field Access</label>
+</PermissionSet>
