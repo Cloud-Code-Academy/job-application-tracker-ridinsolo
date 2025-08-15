@@ -32,5 +32,10 @@ public without sharing class JobApplicationCloseStaleBatch implements Database.B
         Database.update(toUpdate, /* allOrNone */ false);
     }
 
-    public void finish(Database.BatchableContext bc) {}
+    // Schedulable entry point
+    public void execute(SchedulableContext sc) {
+        Database.executeBatch(new JobApplicationCloseStaleBatch(), 200);
     }
+
+    public void finish(Database.BatchableContext bc) {}
+}
