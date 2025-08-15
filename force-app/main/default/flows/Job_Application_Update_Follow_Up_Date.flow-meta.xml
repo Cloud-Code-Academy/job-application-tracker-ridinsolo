@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <description>Updates the follow up date field on the job application record when it is created if there is not follow up date entered by user.</description>
+    <environments>Default</environments>
+    <formulas>
+        <description>Adds seven days to the current date</description>
+        <name>CreatedDatePlus7</name>
+        <dataType>Date</dataType>
+        <expression>DATEVALUE({!$Record.CreatedDate}) + 7</expression>
+    </formulas>
+    <interviewLabel>Job Application - Update Follow Up Date {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Job Application - Update Follow Up Date</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <description>Updates the follow up date to 7 days after job application was created.</description>
+        <name>Update_Follow_Up_Date</name>
+        <label>Update Follow Up Date</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Follow_up_date__c</field>
+            <operator>EqualTo</operator>
+        </filters>
+        <inputAssignments>
+            <field>Follow_up_date__c</field>
+            <value>
+                <elementReference>CreatedDatePlus7</elementReference>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Follow_Up_Date</targetReference>
+        </connector>
+        <object>Job_Application__c</object>
+        <recordTriggerType>Create</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>
