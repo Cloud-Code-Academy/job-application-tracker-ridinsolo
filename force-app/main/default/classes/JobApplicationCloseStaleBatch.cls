@@ -1,4 +1,4 @@
-public without sharing class JobApplicationCloseStaleBatch implements Database.Batchable<SObject> {
+public without sharing class JobApplicationCloseStaleBatch implements Database.Batchable<SObject>, Schedulable {
     // Query all qualifying records
     public Database.QueryLocator start(Database.BatchableContext bc) {
         return Database.getQueryLocator([
