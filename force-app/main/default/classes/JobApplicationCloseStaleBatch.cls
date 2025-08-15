@@ -1,4 +1,4 @@
-public without sharing class JobApplicationCloseStaleBatch implements Database.Batchable<Job_Application__c> {
+public without sharing class JobApplicationCloseStaleBatch implements Database.Batchable<SObject> {
     // Query all qualifying records
     public Database.QueryLocator start(Database.BatchableContext bc) {
         return Database.getQueryLocator([
@@ -10,12 +10,15 @@ public without sharing class JobApplicationCloseStaleBatch implements Database.B
         ]);
     }
 
-    public void execute(Database.BatchableContext bc, List<Job_Application__c> scope) {
+    public void execute(Database.BatchableContext bc, List<SObject> scope) {
+        if(scope.isEmpty()) return;
+
         List<Job_Application__c> toUpdate = new List<Job_Application__c>();
 
         String todayStamp = DateTime.now().format('yyyy-MM-dd HH:mm');
 
-        for (Job_Application__c app : scope) {
+        for (SObject sob : scope) {
+            Job_Application__c app = (Job_Application__c)sob; //cast SObject to job app object
             app.Status__c = 'Closed';
             String existing = app.Notes__c;
             // Update notes with time closed and closed automatically
