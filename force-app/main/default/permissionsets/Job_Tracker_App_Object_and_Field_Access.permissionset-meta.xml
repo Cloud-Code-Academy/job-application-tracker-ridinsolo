@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customMetadataTypeAccesses>
+        <enabled>true</enabled>
+        <name>Jooble_Config__mdt</name>
+    </customMetadataTypeAccesses>
     <description>Gives read and edit access to objects and fields related to the job tracker app.</description>
     <fieldPermissions>
         <editable>true</editable>
@@ -113,7 +117,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Job_Application__c.Source__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Job_Application__c.Status__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Job_Application__c.Type__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
