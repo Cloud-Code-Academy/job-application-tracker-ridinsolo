@@ -24,6 +24,9 @@ public with sharing class JoobleService {
 
     // Reads Jooble API key from custom metadata
     private static String getApiKey() {
+        if (Test.isRunningTest() && apiKeyOverride != null) {
+            return apiKeyOverride;
+        }
         Jooble_Config__mdt cfg = [
             SELECT Api_Key__c
             FROM Jooble_Config__mdt

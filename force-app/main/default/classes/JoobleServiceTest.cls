@@ -2,13 +2,9 @@
 private class JoobleServiceTest {
     // Create test only custom metadata so getApiKey works
     @testSetup
+    @TestVisible private static String apiKeyOverride;
     static void setupCmt() {
-        Jooble_Config__mdt cfg = new Jooble_Config__mdt(
-            DeveloperName = 'UT',
-            MasterLabel = 'UT',
-            Api_Key__c = 'abc123'
-        );
-        insert cfg;
+        JoobleService.apiKeyOverride = 'abc123';
     }
 
     // Mocks successful Jooble API call so searchJobs method runs w/out real HTTP request
