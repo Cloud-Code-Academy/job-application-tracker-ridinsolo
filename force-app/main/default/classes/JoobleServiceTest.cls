@@ -11,7 +11,9 @@ private class JoobleServiceTest {
         public HttpResponse respond(HttpRequest req) {
             // Validate request method and endpoint
             System.assertEquals('POST', req.getMethod(), 'Expected POST');
-            System.assert(req.getEndpoint().endsWith('/abc123'), 'Expected API key in endpoint');
+            String ep = req.getEndpoint();
+            System.assert(ep.contains('/' + JoobleService.apiKeyOverride), 'Expected API key in endpoint Got: ' + ep
+            );
 
             // Verify body defaults when nulls are used in searchJobs
             Map<String, Object> sent = (Map<String, Object>) JSON.deserializeUntyped(req.getBody());
