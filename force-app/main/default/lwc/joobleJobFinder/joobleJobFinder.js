@@ -74,8 +74,19 @@ export default class JoobleJobFinder extends LightningElement {
             this.errorMessage = ''; //clear any old error
 
             try {
+                //Build a plain array of DTOs (no proxies so don't get null values from JSOn serialization)
+                const payload = this.selectedRows.map(r => ({
+                        title:   r.title,
+                        company: r.company,
+                        salary:  r.salary,
+                        link:    r.link,
+                        location:r.location,
+                        snippet: r.snippet,
+                        type:    r.type,
+                        updated: r.updated
+                }));
                 // Send selected rows to Apex, wait til Job App records are inserted, then store record Ids in a constant variable
-                const ids = await createJobApplicationsApex({selected: this.selectedRows});
+                const ids = await createJobApplicationsApex({selected: payload});
                 // Show pop message
                 this.toast('Job Applications created', `Created ${ids.length} record(s)`, 'success');
                 this.selectedRows = []; // clear selection after insert
