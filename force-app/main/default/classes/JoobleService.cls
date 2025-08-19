@@ -98,6 +98,11 @@ public with sharing class JoobleService {
         ResponseBody parsed;
         try {
             parsed = (ResponseBody) JSON.deserialize(res.getBody(), ResponseBody.class);
+            if (parsed != null && parsed.jobs != null) {
+                for (JobDTO j : parsed.jobs) {
+                    j.snippet = cleanHtml(j.snippet);
+                }
+            }
         } catch (Exception ex) {
             // If JSON isn't what we expected show helpful error
             throw new AuraHandledException('Could not parse Jooble response; ' + ex.getMessage());
