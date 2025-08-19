@@ -487,6 +487,16 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
+                <componentName>joobleJobFinder</componentName>
+                <identifier>c_joobleJobFinder</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-93a6fd18-7d1b-41b5-ae55-161b33b811e9</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
                 <componentInstanceProperties>
                     <name>active</name>
                     <value>true</value>
@@ -501,6 +511,20 @@
                 </componentInstanceProperties>
                 <componentName>flexipage:tab</componentName>
                 <identifier>detailTab</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-93a6fd18-7d1b-41b5-ae55-161b33b811e9</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Job Finder</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>flexipage_tab</identifier>
             </componentInstance>
         </itemInstances>
         <mode>Replace</mode>
