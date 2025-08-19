@@ -16,7 +16,7 @@ public with sharing class JoobleService {
         public Integer salary;
     }
 
-    // Object to deserialize the response into
+    // Object to deserialize (turn JSON string into Apex Object) the response into
     private class ResponseBody {
         public Integer totalCount;
         public List<JobDTO> jobs;  // This is what the LWC renders
@@ -33,6 +33,27 @@ public with sharing class JoobleService {
             throw new AuraHandledException('Missing Jooble API key in Custom Metadata.');
         }
         return cfg.Api_Key__c;
+    }
+
+    // Remove HTML tags from Jooble Text
+    private static String cleanHtml(String s) {
+        if (String.isBlank(s)) return s:
+        String out = s;
+
+        // Unescape common html
+        out = out.replace('&nbsp;', ' ')
+             .replace('&amp;', '&')
+             .replace('&lt;', '<')
+             .replace('&gt;', '>')
+             .replace('&quot;', '"')
+             .replace('&#39;', '\'');
+
+        // Strip remaining HTML tags
+        out = out.replaceAll('<[^>]+>', '');
+
+        // Collapse whitespace and trim
+        out = out.replaceAll('\\s+', ' ').trim();
+        return out;
     }
 
     @AuraEnabled(cacheable=false)

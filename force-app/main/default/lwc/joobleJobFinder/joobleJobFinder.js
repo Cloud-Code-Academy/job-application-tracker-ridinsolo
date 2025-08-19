@@ -54,7 +54,6 @@ export default class JoobleJobFinder extends LightningElement {
             typeAttributes: {label: {fieldName: 'title'}, target: '_blank'} // _blank makes link open in new tab
         },
         {label: 'Company', fieldName: 'company', type: 'text'},
-        {label: 'Location', fieldName: 'location', type: 'text'},
         {label: 'Salary', fieldName: 'salary', type: 'text'},
         {label: 'Type', fieldName: 'type', type: 'text'},
         {label: 'Updated', fieldName: 'updated', type: 'text'},
