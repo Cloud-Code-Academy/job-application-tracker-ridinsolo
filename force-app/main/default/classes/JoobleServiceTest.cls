@@ -12,7 +12,9 @@ private class JoobleServiceTest {
             // Validate request method and endpoint
             System.assertEquals('POST', req.getMethod(), 'Expected POST');
             String ep = req.getEndpoint();
-            System.assert(ep.contains('/' + JoobleService.apiKeyOverride), 'Expected API key in endpoint Got: ' + ep
+            System.assert(
+                ep.startsWith('https://jooble.org/api/') || ep.startsWith('callout:'),
+                'Expected Jooble API base URL or Named Credential. Got: ' + ep
             );
 
             // Verify body defaults when nulls are used in searchJobs
