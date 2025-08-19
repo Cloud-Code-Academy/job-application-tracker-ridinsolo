@@ -24,7 +24,7 @@ public with sharing class JoobleService {
 
     // Reads Jooble API key from custom metadata
     private static String getApiKey() {
-        Jooble_Config_mdt cfg = [
+        Jooble_Config__mdt cfg = [
             SELECT Api_Key__c
             FROM Jooble_Config__mdt
             LIMIT 1
