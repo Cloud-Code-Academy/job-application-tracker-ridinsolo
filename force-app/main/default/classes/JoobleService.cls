@@ -37,7 +37,7 @@ public with sharing class JoobleService {
 
     // Remove HTML tags from Jooble Text
     private static String cleanHtml(String s) {
-        if (String.isBlank(s)) return s:
+        if (String.isBlank(s)) return s;
         String out = s;
 
         // Unescape common html
