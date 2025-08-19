@@ -56,6 +56,7 @@ export default class JoobleJobFinder extends LightningElement {
         {label: 'Company', fieldName: 'company', type: 'text'},
         {label: 'Salary', fieldName: 'salary', type: 'text'},
         {label: 'Type', fieldName: 'type', type: 'text'},
+        {label: 'Location', fieldName: 'location', type: 'text'},
         {label: 'Summary', fieldName: 'snippet', type: 'text', wrapText: true}
     ];    
         handleSelection(event) {
