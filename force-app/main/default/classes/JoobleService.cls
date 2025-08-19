@@ -1,13 +1,13 @@
 public with sharing class JoobleService {
     // Data Transfer Object with fields as properties to carry data to and from LWC
     public class JobDTO {
-        @AuraEnabled public String title;
-        @AuraEnabled public String company;
-        @AuraEnabled public String salary;
-        @AuraEnabled public String link;
-        @AuraEnabled public String location;
-        @AuraEnabled public String snippet;
-        @AuraEnabled public String type;
+        @AuraEnabled public String title {get; set;}
+        @AuraEnabled public String company {get; set;}
+        @AuraEnabled public String salary {get; set;}
+        @AuraEnabled public String link {get; set;}
+        @AuraEnabled public String location {get; set;}
+        @AuraEnabled public String snippet {get; set;}
+        @AuraEnabled public String type {get; set;}
     }
     // Holds what is sent to Jooble from LWC inputs
     private class RequestBody {
