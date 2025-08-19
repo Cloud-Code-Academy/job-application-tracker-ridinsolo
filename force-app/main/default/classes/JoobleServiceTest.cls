@@ -2,7 +2,6 @@
 private class JoobleServiceTest {
     // Create test only custom metadata so getApiKey works
     @testSetup
-    @TestVisible private static String apiKeyOverride;
     static void setupCmt() {
         JoobleService.apiKeyOverride = 'abc123';
     }

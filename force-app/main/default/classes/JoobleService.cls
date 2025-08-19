@@ -23,6 +23,8 @@ public with sharing class JoobleService {
     }
 
     // Reads Jooble API key from custom metadata
+    @TestVisible private static String apiKeyOverride;
+
     private static String getApiKey() {
         if (Test.isRunningTest() && apiKeyOverride != null) {
             return apiKeyOverride;
