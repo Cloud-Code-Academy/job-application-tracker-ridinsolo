@@ -53,7 +53,6 @@ private class JoobleServiceTest {
 
         // Check that HTML was stripped
         System.assertEquals('Great role & benefits', jobs[0].snippet, 'Snippet should be cleaned of HTML tags');
-        System.assertEquals('Senior Apex guru/'s', jobs[1].snippet, 'Snippet should be clearned with apostrophe');
-
+        System.assertEquals('Senior Apex guru\'s', jobs[1].snippet, 'Snippet should be clearned with apostrophe');
     }
 }
