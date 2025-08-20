@@ -103,7 +103,7 @@ private class JoobleServiceTest {
 
         // Admin job
         Job_Application__c admin = apps[0];
-        System.assertEquals('Saved, admin.Status__c', 'Status should be Saved');
+        System.assertEquals('Saved', admin.Status__c, 'Status should be Saved');
         System.assertEquals('Jooble', admin.Source__c, 'Source__c should be Jooble');
         System.assert(admin.Description__c.contains('Company: Acme'), 'Description should include company');
         System.assert(admin.Description__c.contains('Salary: $100k'), 'Description should include salary');
@@ -146,9 +146,9 @@ private class JoobleServiceTest {
             j.company = 'Company ' + i;
             j.salary = '$' + (50000 + i);
             j.link = 'https://example.com/job/' + i;
-            j.location = (i % 2 == 0) ? 'Remote' : 'Boise, ID';
+            j.location = (Math.mod(i, 2) == 0) ? 'Remote' : 'Boise, ID';
             j.snippet = 'Summary ' + i; // no HTML needed here; createJobApplications doesn’t clean
-            j.type = (i % 3 == 0) ? 'Contract' : 'Full-time';
+            j.type = (Math.mod(i, 3) == 0) ? 'Contract' : 'Full-time';
             jobs.add(j);            
         }
 
