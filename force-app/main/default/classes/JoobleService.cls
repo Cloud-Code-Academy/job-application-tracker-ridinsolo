@@ -87,7 +87,7 @@ public with sharing class JoobleService {
         if (salary != null) body.salary = salary;
 
         // Convert RequestBody object to JSON and attach to request
-        req.setBody(JSON.serialize(body));
+        req.setBody(JSON.serialize(body, true)); // suppress null field so salary is omitted when null
 
         // Send HTTP POST to Jooble
         Http http = new Http();
