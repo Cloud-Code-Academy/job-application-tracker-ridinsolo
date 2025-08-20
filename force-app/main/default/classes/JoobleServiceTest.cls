@@ -56,7 +56,7 @@ private class JoobleServiceTest {
     }
 
     // Mock that returns non-2xx status
-    private class JobbleMockNon200 implements HTTPCalloutMock {
+    private class JoobleMockNon200 implements HTTPCalloutMock {
         public HttpResponse respond(HttpRequest reg) {
             HttpResponse r = new HttpResponse();
             r.setStatusCode(500);
