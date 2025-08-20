@@ -54,4 +54,32 @@ private class JoobleServiceTest {
         System.assertEquals('Great role & benefits', jobs[0].snippet, 'Snippet should be cleaned of HTML tags');
         System.assertEquals('Senior Apex guru\'s', jobs[1].snippet, 'Snippet should be clearned with apostrophe');
     }
+
+    // Mock that returns non-2xx status
+    private class JobbleMockNon200 implements HTTPCalloutMock {
+        public HttpResponse respond(HttpRequest reg) {
+            HttpResponse r = new HttpResponse();
+            r.setStatusCode(500);
+            r.setStatus('500 Server Error');
+            r.setBody('oops');
+            return r;
+        }
+    }
+
+    @IsTest
+    static void testSearchJobs_non200_throwsHandledException() {
+        Test.setMock(HttpCalloutMock.class, new JoobleMockNon200());
+
+        Boolean threw = false;
+        try {
+            JoobleService.searchJobs('k', 'l', 100);
+        } catch (AuraHandledException ex) {
+            threw = true;
+            System.assert(
+                ex.getMessage().startsWith('Jooble call failed'),
+                'Should throw user-friendsly message on non-2xx'
+            );
+        }
+        System.assert(threw, 'Expeccted AuraHandledException on non-2xx');
+    }
 }
