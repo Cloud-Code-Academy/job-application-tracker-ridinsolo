@@ -6,7 +6,6 @@ private class JoobleServiceTest {
         JoobleService.apiKeyOverride = 'abc123';
     }
 
-
     private class JoobleMockBadJson implements HttpCalloutMock {
     public HttpResponse respond(HttpRequest req) {
         HttpResponse r = new HttpResponse();
