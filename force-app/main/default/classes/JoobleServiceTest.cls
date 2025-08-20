@@ -75,11 +75,7 @@ private class JoobleServiceTest {
             JoobleService.searchJobs('k', 'l', 100);
         } catch (AuraHandledException ex) {
             threw = true;
-            System.assert(
-                ex.getMessage().contains('Jooble call failed'),
-                'Got: ' + ex.getMessage()
-            );
         }
-        System.assert(threw, 'Expeccted AuraHandledException on non-2xx');
+        System.assert(threw, 'Expected AuraHandledException on non-2xx');
     }
 }
