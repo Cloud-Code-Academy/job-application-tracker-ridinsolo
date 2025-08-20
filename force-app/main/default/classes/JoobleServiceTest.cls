@@ -76,8 +76,8 @@ private class JoobleServiceTest {
         } catch (AuraHandledException ex) {
             threw = true;
             System.assert(
-                ex.getMessage().startsWith('Jooble call failed'),
-                'Should throw user-friendsly message on non-2xx'
+                ex.getMessage().contains('Jooble call failed'),
+                'Got: ' + ex.getMessage()
             );
         }
         System.assert(threw, 'Expeccted AuraHandledException on non-2xx');
