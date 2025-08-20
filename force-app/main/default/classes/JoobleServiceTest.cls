@@ -78,4 +78,60 @@ private class JoobleServiceTest {
         }
         System.assert(threw, 'Expected AuraHandledException on non-2xx');
     }
+
+    @IsTest
+    static void testCreateJobApplications_inserts_and_maps_fields() {
+        // Use success mock to get two JobDTOs
+        Test.setMock(HttpCalloutMock.class, new JoobleMockOK());
+
+        Test.startTest();
+        List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null);
+        List<Id> newIds = JoobleService.createJobApplications(jobs);
+        Test.stopTest();
+
+        System.assertEquals(2, newIds.size(), 'Should return 2 new Ids');
+
+        // Verify mappings on the inserted records
+        List<Job_Application__c> apps = [
+            SELECT Id, Status__c, Source__c, Description__c,
+                    Position_Title__c, Location__c, URL__c, Type__c, OwnerId
+            FROM Job_Application__c
+            WHERE Id IN :newIds
+            ORDER BY Position_Title__c
+        ];
+        System.assertEquals(2, apps.size(), 'Should insert 2 Job Applications');
+
+        // Admin job
+        Job_Application__c admin = apps[0];
+        System.assertEquals('Saved, admin.Status__c');
+        System.assertEquals('Jooble', admin.Source__c);
+        System.assert(admin.Description__c.contains('Company: Acme'), 'Description should include company');
+        System.assert(admin.Description__c.contains('Salary: $100k'), 'Description should include salary');
+        System.assert(admin.Description__c.contains('Great role & benefits'), 'Description should include cleaned snippet');
+        System.assertEquals('Admin', admin.Position_Title__c, 'Job title should map from JobDTO.title');
+        System.assertEquals('Remote', admin.Location__c, 'Location should map from JobDTO.location');
+        System.assertEquals('https://example.com/1', admin.URL__c, 'URL should map from JobDTO.link');
+        System.assertEquals('Full-time', admin.Type__c, 'Type should map from JobDTO.type');
+        System.assertEquals(UserInfo.getUserId(), admin.OwnerId, 'OwnerId should map to current user');
+
+        // Dev job
+        Job_Application__c dev = apps[1];
+        System.assertEquals('Dev', dev.Position_Title__c, 'Job title should map from JobDTO.title');
+        System.assertEquals('Boise, ID', dev.Location__c, 'Location should map from JobDTO.location');
+        System.assertEquals('https://example.com/2', dev.URL__c, 'URL should map from JobDTO.link');
+        System.assertEquals('Contract', dev.Type__c, 'Type should map from JobDTO.type');
+        System.assert(dev.Description__c.contains('Senior Apex guru\'s'),
+            'Description should include cleaned snippet with apostrophe');        
+        }
+
+    @IsTest
+    static void testCreateJobApplications_handles_empty_input() {
+        // Empty list
+        List<Id> none1 = JoobleService.createJobApplications(new List<JoobleService.JobDTO>());
+        System.assertEquals(0, none1.size(), 'Empty list should return empty Ids');
+
+        // Null
+        List<Id> none2 = JooobleService.createJobApplications(null);
+        System.assertEquals(0, none2.size(), 'Null should return empty Ids');
+    }
 }
