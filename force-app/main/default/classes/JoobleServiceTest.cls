@@ -6,6 +6,31 @@ private class JoobleServiceTest {
         JoobleService.apiKeyOverride = 'abc123';
     }
 
+
+    private class JoobleMockBadJson implements HttpCalloutMock {
+    public HttpResponse respond(HttpRequest req) {
+        HttpResponse r = new HttpResponse();
+        r.setStatusCode(200);
+        r.setStatus('200 OK');
+        // Intentionally wrong shape to trigger the catch block
+        r.setBody('{"jobs":"not-a-list"}');
+        return r;
+    }
+}
+@IsTest
+static void testSearchJobs_badJson_throwsHandledException() {
+    Test.setMock(HttpCalloutMock.class, new JoobleMockBadJson());
+
+    Boolean threw = false;
+    try {
+        JoobleService.searchJobs('x', 'y', 123);
+    } catch (AuraHandledException ex) {
+        threw = true; // message may be masked as "Script-thrown exception"
+    }
+    System.assert(threw, 'Expected AuraHandledException on bad JSON');
+}
+
+
     // Mocks successful Jooble API call so searchJobs method runs w/out real HTTP request
     private class JoobleMockOK implements HttpCalloutMock {
         public HttpResponse respond(HttpRequest req) {
@@ -170,12 +195,63 @@ private class JoobleServiceTest {
         ];           
         System.assertEquals(true, sample.size() > 0, 'Should retrieve sample rows');
         for (Job_Application__c a : sample) {
-            System.assertEquals('Saved', a.Status__c);
-            System.assertEquals('Jooble', a.Source__c);
+            System.assertEquals('Saved', a.Status__c, 'Status should equal saved');
+            System.assertEquals('Jooble', a.Source__c, 'Source should be Jooble');
             System.assert(a.Description__c.startsWith('Company:'), 'Description should start with Company:');
-            System.assertEquals(UserInfo.getUserId(), a.OwnerId);
+            System.assertEquals(UserInfo.getUserId(), a.OwnerId, 'OwnerId should be current user');
             System.assertNotEquals(null, a.URL__c, 'URL should be set');
             System.assertNotEquals(null, a.Type__c, 'Type should be set');
         }       
     }
+    // Mock that verifies non-null inputs and Content-Type header
+private class JoobleMockChecksInputs implements HttpCalloutMock {
+    public HttpResponse respond(HttpRequest req) {
+        // Header check
+        System.assertEquals('application/json', req.getHeader('Content-Type'), 'Content-Type header should be application/json');
+
+        // Body checks: keywords/location should reflect inputs, salary should be present
+        Map<String, Object> sent = (Map<String, Object>) JSON.deserializeUntyped(req.getBody());
+        System.assertEquals('Admin', (String)sent.get('keywords'), 'keywords should use provided value');
+        System.assertEquals('Boise', (String)sent.get('location'), 'location should use provided value');
+        System.assertEquals(true, sent.containsKey('salary'), 'salary should be included when provided');
+        System.assertEquals(90000, (Integer)sent.get('salary'), 'salary should match provided value');
+
+        // Return a simple valid response
+        HttpResponse r = new HttpResponse();
+        r.setStatusCode(200);
+        r.setStatus('200 OK');
+        r.setBody('{"totalCount":1,"jobs":[{"title":"Admin","company":"Acme","salary":"$90k","link":"https://ex/1","location":"Boise","snippet":"Good role","type":"Full-time"}]}');
+        return r;
+    }
+}
+
+@IsTest
+static void testSearchJobs_uses_provided_inputs_in_request_body() {
+    Test.setMock(HttpCalloutMock.class, new JoobleMockChecksInputs());
+
+    List<JoobleService.JobDTO> jobs = JoobleService.searchJobs('Admin', 'Boise', 90000);
+
+    System.assertEquals(1, jobs.size(), 'searchJobs should return 1 job from mock response');
+    System.assertEquals('Admin', jobs[0].title, 'Title should deserialize from response');
+}
+// Mock that returns 200 OK with jobs = null
+private class JoobleMockNoJobs implements HttpCalloutMock {
+    public HttpResponse respond(HttpRequest req) {
+        HttpResponse r = new HttpResponse();
+        r.setStatusCode(200);
+        r.setStatus('200 OK');
+        r.setBody('{"totalCount":0,"jobs":null}');
+        return r;
+    }
+}
+
+@IsTest
+static void testSearchJobs_returns_empty_list_when_no_jobs() {
+    Test.setMock(HttpCalloutMock.class, new JoobleMockNoJobs());
+
+    List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null);
+
+    System.assertEquals(0, jobs.size(), 'Should return empty list when response has no jobs');
+}
+
 }
