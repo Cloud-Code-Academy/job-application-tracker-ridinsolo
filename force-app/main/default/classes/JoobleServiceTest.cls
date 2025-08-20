@@ -39,7 +39,7 @@ private class JoobleServiceTest {
     }
 
     @IsTest
-    static void testSearchJobs_success_and_cleanHTML_and_defaults() {
+    static void testSearchJobs_success_and_cleanHtml_and_defaults() {
         // Tell Salesforce to use success mock callout
         Test.setMock(HttpCalloutMock.class, new JoobleMockOK());
 
@@ -52,12 +52,12 @@ private class JoobleServiceTest {
 
         // Check that HTML was stripped
         System.assertEquals('Great role & benefits', jobs[0].snippet, 'Snippet should be cleaned of HTML tags');
-        System.assertEquals('Senior Apex guru\'s', jobs[1].snippet, 'Snippet should be clearned with apostrophe');
+        System.assertEquals('Senior Apex guru\'s', jobs[1].snippet, 'Snippet should be cleaned with apostrophe');
     }
 
     // Mock that returns non-2xx status
-    private class JoobleMockNon200 implements HTTPCalloutMock {
-        public HttpResponse respond(HttpRequest reg) {
+    private class JoobleMockNon200 implements HttpCalloutMock {
+        public HttpResponse respond(HttpRequest req) {
             HttpResponse r = new HttpResponse();
             r.setStatusCode(500);
             r.setStatus('500 Server Error');
@@ -103,8 +103,8 @@ private class JoobleServiceTest {
 
         // Admin job
         Job_Application__c admin = apps[0];
-        System.assertEquals('Saved, admin.Status__c');
-        System.assertEquals('Jooble', admin.Source__c);
+        System.assertEquals('Saved, admin.Status__c', 'Status should be Saved');
+        System.assertEquals('Jooble', admin.Source__c, 'Source__c should be Jooble');
         System.assert(admin.Description__c.contains('Company: Acme'), 'Description should include company');
         System.assert(admin.Description__c.contains('Salary: $100k'), 'Description should include salary');
         System.assert(admin.Description__c.contains('Great role & benefits'), 'Description should include cleaned snippet');
@@ -131,7 +131,51 @@ private class JoobleServiceTest {
         System.assertEquals(0, none1.size(), 'Empty list should return empty Ids');
 
         // Null
-        List<Id> none2 = JooobleService.createJobApplications(null);
+        List<Id> none2 = JoobleService.createJobApplications(null);
         System.assertEquals(0, none2.size(), 'Null should return empty Ids');
+    }
+
+    @IsTest 
+    static void testCreateJobApplications_bulk_inserts_all() {
+        // Build a larte list of JobDTOs without doing callouts
+        Integer n = 201;
+        List<JoobleService.JobDTO> jobs = new List<JoobleService.JobDTO>();
+        for (Integer i = 1; i <= n; i++) {
+            JoobleService.JobDTO j = new JoobleService.JobDTO();
+            j.title = 'Role ' + i;
+            j.company = 'Company ' + i;
+            j.salary = '$' + (50000 + i);
+            j.link = 'https://example.com/job/' + i;
+            j.location = (i % 2 == 0) ? 'Remote' : 'Boise, ID';
+            j.snippet = 'Summary ' + i; // no HTML needed here; createJobApplications doesn’t clean
+            j.type = (i % 3 == 0) ? 'Contract' : 'Full-time';
+            jobs.add(j);            
+        }
+
+        Test.startTest();
+        List<Id> newIds = JoobleService.createJobApplications(jobs);
+        Test.stopTest();
+
+        // All job applications should be inserted
+        System.assertEquals(n, newIds.size(), 'Should insert all Job Applications');
+
+        // Spot-check a few records for correct mapping
+        List<Job_Application__c> sample = [
+            SELECT Position_Title__c, Source__c, Status__c, Description__c,
+                Location__c, URL__c, Type__c, OwnerId
+            FROM Job_Application__c
+            WHERE Id IN :newIds
+            ORDER BY Position_Title__c
+            LIMIT 3
+        ];           
+        System.assertEquals(true, sample.size() > 0, 'Should retrieve sample rows');
+        for (Job_Application__c a : sample) {
+            System.assertEquals('Saved', a.Status__c);
+            System.assertEquals('Jooble', a.Source__c);
+            System.assert(a.Description__c.startsWith('Company:'), 'Description should start with Company:');
+            System.assertEquals(UserInfo.getUserId(), a.OwnerId);
+            System.assertNotEquals(null, a.URL__c, 'URL should be set');
+            System.assertNotEquals(null, a.Type__c, 'Type should be set');
+        }       
     }
 }
