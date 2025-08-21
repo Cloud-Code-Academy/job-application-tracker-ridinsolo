@@ -18,7 +18,6 @@ private class JobApplicationPrimaryContactSetterTest {
 
         // Create Job Application with no primary contact
         Job_Application__c app = new Job_Application__c(
-            Name = 'App 1',
             Company_Name__c = c.AccountId
         );
         insert app;
@@ -47,7 +46,6 @@ private class JobApplicationPrimaryContactSetterTest {
 
         // Create Job Application with no primary contact and NO Job Application Contact
         Job_Application__c app = new Job_Application__c(
-            Name = 'App 2',
             Company_Name__c = c.AccountId
         );
         insert app;
@@ -68,7 +66,6 @@ private class JobApplicationPrimaryContactSetterTest {
 
         // Create Job Application that already has a Primary Contact
         Job_Application__c app = new Job_Application__c(
-            Name = 'App 3',
             Company_Name__c = c.AccountId,
             Primary_Contact__c = c.Id
         );
@@ -91,7 +88,6 @@ private class JobApplicationPrimaryContactSetterTest {
         insert acct;
 
         Job_Application__c app = new Job_Application__c(
-            Name = 'App 4',
             Company_Name__c = acct.Id
         );
         insert app;
