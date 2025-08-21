@@ -12,6 +12,7 @@ private class WeeklyTaskHandlerTest {
         System.assert(!openStatuses.isEmpty(), 'No open TaskStatus found.');
         return openStatuses[0].MasterLabel;
     }
+
     private static String getClosedStatus() {
         List<TaskStatus> closedStatuses = [
             SELECT MasterLabel, IsClosed
@@ -183,5 +184,44 @@ private class WeeklyTaskHandlerTest {
         Test.stopTest();
         System.assert(true, 'Handler should handle empty inputs without error.');
     }
+
+    // New: actually fire the TaskTrigger by performing a real update
+    @IsTest
+    static void testTaskTrigger_firesOnAfterUpdate() {
+        String openStatus = getOpenStatus();
+        String closedStatus = getClosedStatus();
+
+        Job_Application__c appApplied = makeApp('Applied');
+        Id ownerId = UserInfo.getUserId();
+        String weekly = JobApplicationTaskCreation.WEEKLY_TAG + ' Follow up weekly';
+
+        Task t = new Task(
+            WhatId = appApplied.Id,
+            OwnerId = ownerId,
+            Subject = weekly,
+            Priority = 'High',
+            Status = openStatus
+        );
+        insert t;
+
+        Test.startTest();
+        t.Status = closedStatus;  // Do not set IsClosed directly
+        update t;                 // Fires TaskTrigger -> WeeklyTaskHandler.afterUpdate
+        Test.stopTest();
+
+        Date expectedNextDue = Date.today().addDays(7);
+        List<Task> created = [
+            SELECT Id, Subject, WhatId, OwnerId, Status, ActivityDate, Priority, IsClosed
+            FROM Task
+            WHERE IsClosed = false
+              AND WhatId = :appApplied.Id
+              AND OwnerId = :ownerId
+              AND Subject = :weekly
+              AND ActivityDate = :expectedNextDue
+        ];
+        System.assertEquals(1, created.size(), 'Exactly one next weekly task should be created.');
+        System.assertEquals('High', created[0].Priority, 'Priority should carry over.');
+    }
 }
+
 
