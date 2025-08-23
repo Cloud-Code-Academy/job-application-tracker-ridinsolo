@@ -53,10 +53,19 @@ private class JobApplicationCloseStaleBatchTest {
     }
 
     @IsTest
-    static void testSchedulableExecution() {
+    static void testSchedulableQueuesBatch() {
         Test.startTest();
         System.schedule('Test Schedule', '0 0 12 * * ?', new JobApplicationCloseStaleBatch());
         Test.stopTest();
+
+        AsyncApexJob j = [
+            SELECT Id, Status, JobType
+            FROM AsyncApexJob
+            WHERE JobType = 'BatchApex'
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+        System.assertEquals('Completed', j.Status, 'Batch should complete during test');
 
         // After schedule runs, the batch will have been executed, but
         // the coverage is from invoking the schedulable entry point
