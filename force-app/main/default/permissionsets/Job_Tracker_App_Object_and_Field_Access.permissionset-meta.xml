@@ -57,11 +57,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Job_Application_Contact__c.Job_Application__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>Job_Application_Contact__c.Role__c</field>
         <readable>true</readable>
     </fieldPermissions>
