@@ -50,8 +50,18 @@
                 data={rows}
                 columns={columns}
                 onrowselection={handleSelection}
+                selected-rows={selectedRowKeys}
                 max-row-selection="25">
             </lightning-datatable>
+            
+            <div class="slds-m-top_small slds-grid slds-grid_align-spread slds-p-horizontal_small">
+                <div>Page {page} of {totalPages} • {totalCount} result(s)</div>
+                <div>
+                    <lightning-button label="Previous" onclick={prevPage} disabled={disablePrev}></lightning-button>
+                    <lightning-button class="slds-m-left_small" label="Next" onclick={nextPage} disabled={disableNext}></lightning-button>
+                </div>
+                </div>
+
          </template>
 
          <!-- Simple error display-->
