@@ -14,6 +14,8 @@ public with sharing class JoobleService {
         public String keywords; 
         public String location; 
         public Integer salary;
+        public String page; // page number as a string, ie "1"
+        public Integer resultonpage; // jobs per page
     }
 
     // Object to deserialize (turn JSON string into Apex Object) the response into
@@ -21,6 +23,11 @@ public with sharing class JoobleService {
         public Integer totalCount;
         public List<JobDTO> jobs;  // This is what the LWC renders
     }
+
+    public class SearchResultDTO {
+        @AuraEnabled public Integer totalCount;
+        @AuraEnabled public List<JobDTO> jobs;
+     }
 
     // Reads Jooble API key from custom metadata
     @TestVisible private static String apiKeyOverride;
@@ -64,12 +71,14 @@ public with sharing class JoobleService {
     @AuraEnabled(cacheable=false)
     // Method that accepts job search filters (keywords, location, salary, etc.)
     // These values are placed into the RequestBody JSON and sent to Jooble
-    // to retrieve matching jobs. Returns a list of JobDTO results.
-    public static List<JobDTO> searchJobs (
+    // to retrieve matching jobs. 
+    public static SearchResultDTO searchJobs (
         // from LWC input
         String keywords, 
         String location, 
-        Integer salary
+        Integer salary,
+        String page,
+        Integer resultOnPage
     ) {
         HttpRequest req = new HttpRequest(); // holder for the outbound HTTP request
         req.setMethod('POST'); // Jooble expects POST
@@ -84,6 +93,8 @@ public with sharing class JoobleService {
         RequestBody body = new RequestBody();
         body.keywords = String.isBlank(keywords) ? 'Salesforce' : keywords;
         body.location = String.isBlank(location) ? 'Remote' : location;
+        body.page = String.isBlank(page) ? '1' : page;
+        body.resultonpage = (resultOnPage == null || resultOnPage <= 0) ? 25 : resultOnPage;
         if (salary != null) body.salary = salary;
 
         // Convert RequestBody object to JSON and attach to request
@@ -113,9 +124,11 @@ public with sharing class JoobleService {
             throw new AuraHandledException('Could not parse Jooble response; ' + ex.getMessage());
         }
 
-        // Return the jobs list
-        return (parsed != null && parsed.jobs !=null) ? parsed.jobs : new List<JobDTO>();
-
+        // Return totalCount + jobs for the LWC to page
+        SearchResultDTO out = new SearchResultDTO();
+        out.totalCount = (parsed == null ? 0 : parsed.totalCount);
+        out.jobs = (parsed != null && parsed.jobs != null) ? parsed.jobs : new List<JobDTO>();
+        return out;
     }
 
     @AuraEnabled
