@@ -33,7 +33,8 @@ export default class JoobleJobFinder extends LightningElement {
             fieldName: 'link',
             type: 'url',
             wrapText: true,
-            typeAttributes: {label: {fieldName: 'title'}, target: '_blank'} // _blank makes link open in new tab
+            // _blank makes link open in new tab
+            typeAttributes: {label: {fieldName: 'title'}, target: '_blank'} 
         },
         {label: 'Company', fieldName: 'company', type: 'text'},
         {label: 'Salary', fieldName: 'salary', type: 'text'},
@@ -62,7 +63,7 @@ export default class JoobleJobFinder extends LightningElement {
             const result = await searchJobsApex({
                 keywords: this.keywords,
                 location: this.location,
-                salary: this.salary
+                salary: this.salary,
                 page: String(this.page),
                 resultOnPage: this.pageSize
             });
