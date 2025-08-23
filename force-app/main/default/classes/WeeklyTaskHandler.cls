@@ -1,7 +1,7 @@
 public with sharing class WeeklyTaskHandler {
 
      public static void afterUpdate(List<Task> newList, Map<Id, Task> oldMap) {
-    // Instantiate list of tasks that will hold weekly tasks that went from open to closed, are related to Job Application, and are weekly
+    // Instantiate list of tasks that will hold weekly tasks that went from open to closed and are related to Job Application
     List<Task> justClosedWeekly = new List<Task>();
     // Loop through tasks, get the previous version of task before update so can verify later in code if task went from open to closed
     for (Task t : newList) {

@@ -6,13 +6,41 @@ import createJobApplicationsApex from '@salesforce/apex/JoobleService.createJobA
 
 // Define LWC class that extends Salesforce base functionality and is main component the js file exports
 export default class JoobleJobFinder extends LightningElement {
+    // inputs
     @track keywords = '';
     @track location = '';
     @track salary;
+
+    // results + ui state
     @track rows = [];
     @track selectedRows = [];
     @track errorMessage = '';
     @track loading = false;
+
+    // paging
+    @track page = 1;
+    @track pageSize = 25;
+    @track totalCount = 0;
+
+    // selection (to persists across pages)
+    selectedCache = new Map(); //key -> row
+    @track selectedRowKeys = []; // used by datatable selected-rows
+
+    // Datatable columns that map to JobDTO fields from Apex
+    columns = [
+        {
+            label: 'Title',
+            fieldName: 'link',
+            type: 'url',
+            wrapText: true,
+            typeAttributes: {label: {fieldName: 'title'}, target: '_blank'} // _blank makes link open in new tab
+        },
+        {label: 'Company', fieldName: 'company', type: 'text'},
+        {label: 'Salary', fieldName: 'salary', type: 'text'},
+        {label: 'Type', fieldName: 'type', type: 'text'},
+        {label: 'Location', fieldName: 'location', type: 'text'},
+        {label: 'Summary', fieldName: 'snippet', type: 'text', wrapText: true}
+    ]; 
 
     // Wire inputs and buttons in HTML. Function acts as listener that keeps JS in sync with what's typed in UI.
     handleInput(event) {
@@ -35,62 +63,89 @@ export default class JoobleJobFinder extends LightningElement {
                 keywords: this.keywords,
                 location: this.location,
                 salary: this.salary
+                page: String(this.page),
+                resultOnPage: this.pageSize
             });
-            this.rows = result;
+            // Apex should return {totalCount, jobs}
+            this.rows = result?.jobs || [];
+            this.totalCount = result?.totalCount || 0;
+            this.syncSelectedRowKeys(); // keep previously selected rows checked
         } catch (error) {
             this.errorMessage = error.body ? error.body.message : error.message;
         } finally {
             this.loading = false;
         }
     }
-
-    // Datatable columns that map to JobDTO fields from Apex
-    columns = [
-        {
-            label: 'Title',
-            fieldName: 'link',
-            type: 'url',
-            wrapText: true,
-            typeAttributes: {label: {fieldName: 'title'}, target: '_blank'} // _blank makes link open in new tab
-        },
-        {label: 'Company', fieldName: 'company', type: 'text'},
-        {label: 'Salary', fieldName: 'salary', type: 'text'},
-        {label: 'Type', fieldName: 'type', type: 'text'},
-        {label: 'Location', fieldName: 'location', type: 'text'},
-        {label: 'Summary', fieldName: 'snippet', type: 'text', wrapText: true}
-    ];    
+   
         handleSelection(event) {
-            this.selectedRows = event.detail.selectedRows || [];
+            const selectedOnThisPage = new Set((event.detail.selectedRows || []).map(r => r.link)); // key-field
+            for (const row of this.rows) {
+                const key = row.link;
+                if (selectedOnThisPage.has(key)) {
+                    this.selectedCache.set(key, row); // add/update selection
+                } else {
+                    this.selectedCache.delete(key); // unselect if unchecked
+                }
+            }
+            this.synceSelectedRowKeys();
+        }
+
+        syncSelectedRowKeys() {
+            this.selectedRowKeys = Array.from(this.selectedCache.keys());
         }
 
         // Returns true when button should be disabled
         get disableCreate() {
-            return this.loading || (this.selectedRows?.length ?? 0) === 0;
+            return this.loading || this.selectedCache.size === 0;
         }
 
-        // Method to create job apps from selected rows
+        // Compute pages and wire up Next/Prev buttons
+        get totalPages() {
+            return Math.max(1, Math.ceil((this.totalCount || 0) / this.pageSize));
+        }
+        get disablePrev() {
+            return this.loading || this.page <= 1;
+        }
+        get disableNext() {
+            return this.loading || this.page >= this.totalPages;
+        }
+
+        async nextPage() {
+            if (this.disableNext) return;
+            this.page += 1;
+            await this.search();
+        }
+        async prevPage() {
+            if (this.disablePrev) return;
+            this.page = Math.max(1, this.page - 1);
+            await this.search();
+        }
+
+        // Method to create job apps from selected rows across pages
         async createApps() {
-            if(!this.selectedRows.length) return; //nothing selected, do nothing
+            // Build payload from ALL selected rows across pages
+            const payload = Array.from(this.selectedCache.values()).map(r => ({
+                    title:   r.title,
+                    company: r.company,
+                    salary:  r.salary,
+                    link:    r.link,
+                    location:r.location,
+                    snippet: r.snippet,
+                    type:    r.type,
+                    updated: r.updated
+            }));
+            if (!payload.length) return; //nothing selected, do nothing
+
             this.loading = true; //disable buttons and show spinner
             this.errorMessage = ''; //clear any old error
 
             try {
-                //Build a plain array of DTOs (no proxies so don't get null values from JSOn serialization)
-                const payload = this.selectedRows.map(r => ({
-                        title:   r.title,
-                        company: r.company,
-                        salary:  r.salary,
-                        link:    r.link,
-                        location:r.location,
-                        snippet: r.snippet,
-                        type:    r.type,
-                        updated: r.updated
-                }));
                 // Send selected rows to Apex, wait til Job App records are inserted, then store record Ids in a constant variable
                 const ids = await createJobApplicationsApex({selected: payload});
                 // Show pop message
                 this.toast('Job Applications created', `Created ${ids.length} record(s)`, 'success');
-                this.selectedRows = []; // clear selection after insert
+                this.selectedCache.clear(); // clear selection after insert
+                this.syncSelectedRowKeys();
             } catch (e) {
                 // Set this.errorMessage to most detailed error message available otherwise show "Insert Failed" in pop up error message
                 this.errorMessage = e?.body?.message || e?.message || 'Insert failed';
