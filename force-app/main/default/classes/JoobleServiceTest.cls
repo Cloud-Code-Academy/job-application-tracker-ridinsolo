@@ -69,7 +69,7 @@ static void testSearchJobs_badJson_throwsHandledException() {
 
         Test.startTest();
         // Call method with all null parameters
-        List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null);
+        List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null, null, null);
         Test.stopTest();
 
         System.assertEquals(2, jobs.size(), 'Should return 2 jobs');
@@ -96,7 +96,7 @@ static void testSearchJobs_badJson_throwsHandledException() {
 
         Boolean threw = false;
         try {
-            JoobleService.searchJobs('k', 'l', 100);
+            JoobleService.searchJobs('k', 'l', 100, null, null);
         } catch (AuraHandledException ex) {
             threw = true;
         }
@@ -109,7 +109,7 @@ static void testSearchJobs_badJson_throwsHandledException() {
         Test.setMock(HttpCalloutMock.class, new JoobleMockOK());
 
         Test.startTest();
-        List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null);
+        List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null, null, null);
         List<Id> newIds = JoobleService.createJobApplications(jobs);
         Test.stopTest();
 
@@ -228,7 +228,7 @@ private class JoobleMockChecksInputs implements HttpCalloutMock {
 static void testSearchJobs_uses_provided_inputs_in_request_body() {
     Test.setMock(HttpCalloutMock.class, new JoobleMockChecksInputs());
 
-    List<JoobleService.JobDTO> jobs = JoobleService.searchJobs('Admin', 'Boise', 90000);
+    List<JoobleService.JobDTO> jobs = JoobleService.searchJobs('Admin', 'Boise', 90000, null, null);
 
     System.assertEquals(1, jobs.size(), 'searchJobs should return 1 job from mock response');
     System.assertEquals('Admin', jobs[0].title, 'Title should deserialize from response');
@@ -248,7 +248,7 @@ private class JoobleMockNoJobs implements HttpCalloutMock {
 static void testSearchJobs_returns_empty_list_when_no_jobs() {
     Test.setMock(HttpCalloutMock.class, new JoobleMockNoJobs());
 
-    List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null);
+    List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null, null, null);
 
     System.assertEquals(0, jobs.size(), 'Should return empty list when response has no jobs');
 }
