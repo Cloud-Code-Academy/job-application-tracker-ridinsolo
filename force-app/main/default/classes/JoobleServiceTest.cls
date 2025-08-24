@@ -19,13 +19,14 @@ private class JoobleServiceTest {
 @IsTest
 static void testSearchJobs_badJson_throwsHandledException() {
     Test.setMock(HttpCalloutMock.class, new JoobleMockBadJson());
-
+    Test.startTest();
     Boolean threw = false;
     try {
-        JoobleService.searchJobs('x', 'y', 123);
+        JoobleService.searchJobs('x', 'y', 123, null, null);
     } catch (AuraHandledException ex) {
         threw = true; // message may be masked as "Script-thrown exception"
     }
+    Test.stopTest();
     System.assert(threw, 'Expected AuraHandledException on bad JSON');
 }
 
@@ -69,7 +70,8 @@ static void testSearchJobs_badJson_throwsHandledException() {
 
         Test.startTest();
         // Call method with all null parameters
-        List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null, null, null);
+        JoobleService.SearchResultDTO res = JoobleService.searchJobs(null, null, null, null, null);
+        List<JoobleService.JobDTO> jobs = res.jobs;
         Test.stopTest();
 
         System.assertEquals(2, jobs.size(), 'Should return 2 jobs');
@@ -93,13 +95,14 @@ static void testSearchJobs_badJson_throwsHandledException() {
     @IsTest
     static void testSearchJobs_non200_throwsHandledException() {
         Test.setMock(HttpCalloutMock.class, new JoobleMockNon200());
-
+        Test.startTest();
         Boolean threw = false;
         try {
             JoobleService.searchJobs('k', 'l', 100, null, null);
         } catch (AuraHandledException ex) {
             threw = true;
         }
+        Test.stopTest();
         System.assert(threw, 'Expected AuraHandledException on non-2xx');
     }
 
@@ -109,7 +112,8 @@ static void testSearchJobs_badJson_throwsHandledException() {
         Test.setMock(HttpCalloutMock.class, new JoobleMockOK());
 
         Test.startTest();
-        List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null, null, null);
+        JoobleService.SearchResultDTO res = JoobleService.searchJobs(null, null, null, null, null);
+        List<JoobleService.JobDTO> jobs = res.jobs;
         List<Id> newIds = JoobleService.createJobApplications(jobs);
         Test.stopTest();
 
@@ -228,11 +232,10 @@ private class JoobleMockChecksInputs implements HttpCalloutMock {
 static void testSearchJobs_uses_provided_inputs_in_request_body() {
     Test.setMock(HttpCalloutMock.class, new JoobleMockChecksInputs());
 
-    List<JoobleService.JobDTO> jobs = JoobleService.searchJobs('Admin', 'Boise', 90000, null, null);
-
-    System.assertEquals(1, jobs.size(), 'searchJobs should return 1 job from mock response');
-    System.assertEquals('Admin', jobs[0].title, 'Title should deserialize from response');
-}
+    JoobleService.SearchResultDTO res = JoobleService.searchJobs('Admin', 'Boise', 90000, null, null);
+    System.assertEquals(1, res.jobs.size(), 'searchJobs should return 1 job from mock response');
+    System.assertEquals('Admin', res.jobs[0].title, 'Title should deserialize from response');
+    }
 // Mock that returns 200 OK with jobs = null
 private class JoobleMockNoJobs implements HttpCalloutMock {
     public HttpResponse respond(HttpRequest req) {
@@ -248,9 +251,9 @@ private class JoobleMockNoJobs implements HttpCalloutMock {
 static void testSearchJobs_returns_empty_list_when_no_jobs() {
     Test.setMock(HttpCalloutMock.class, new JoobleMockNoJobs());
 
-    List<JoobleService.JobDTO> jobs = JoobleService.searchJobs(null, null, null, null, null);
+JoobleService.SearchResultDTO res = JoobleService.searchJobs(null, null, null, null, null);
+System.assertEquals(0, res.jobs.size(), 'Should return empty list when response has no jobs');
 
-    System.assertEquals(0, jobs.size(), 'Should return empty list when response has no jobs');
 }
 
 }
