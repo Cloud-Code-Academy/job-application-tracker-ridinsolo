@@ -57,6 +57,8 @@ export default class JoobleJobFinder extends LightningElement {
 
     // Define method that runs when user clicks search button in HTML
     async search() {
+        if (this.page !== 1) this.page = 1;
+        this.selectedCache.clear(); // clear old selections on new search
         this.loading = true;
         this.errorMessage = '';
         try {
@@ -68,7 +70,13 @@ export default class JoobleJobFinder extends LightningElement {
                 resultOnPage: this.pageSize
             });
             // Apex should return {totalCount, jobs}
-            this.rows = result?.jobs || [];
+            // Build stable keys for this page (don’t rely on link being unique or present)
+            const pageNum = this.page;
+            const rawRows = result?.jobs || [];
+            this.rows = rawRows.map((r, i) => ({
+                ...r,
+                _key: r.link ? `k:${r.link}` : `k:${pageNum}:${i}:${Math.random().toString(36).slice(2)}`
+            }));
             this.totalCount = result?.totalCount || 0;
             this.syncSelectedRowKeys(); // keep previously selected rows checked
         } catch (error) {
@@ -79,20 +87,22 @@ export default class JoobleJobFinder extends LightningElement {
     }
    
         handleSelection(event) {
-            const selectedOnThisPage = new Set((event.detail.selectedRows || []).map(r => r.link)); // key-field
+            const selectedOnThisPage = new Set((event.detail.selectedRows || []).map(r => r._key)); // key-field
             for (const row of this.rows) {
-                const key = row.link;
+                const key = row._key;
                 if (selectedOnThisPage.has(key)) {
                     this.selectedCache.set(key, row); // add/update selection
                 } else {
                     this.selectedCache.delete(key); // unselect if unchecked
                 }
             }
-            this.synceSelectedRowKeys();
+            this.syncSelectedRowKeys();
         }
 
         syncSelectedRowKeys() {
-            this.selectedRowKeys = Array.from(this.selectedCache.keys());
+            const currentKeys = new Set((this.rows || []).map(r => r._key));
+            // Show checkboxes only for rows that exist on this page
+            this.selectedRowKeys = Array.from(this.selectedCache.keys()).filter(k => currentKeys.has(k));
         }
 
         // Returns true when button should be disabled
