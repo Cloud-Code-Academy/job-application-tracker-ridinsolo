@@ -62,12 +62,20 @@ export default class JoobleJobFinder extends LightningElement {
     }
 
     makeKey(r) {
-    // Prefer link; else build a stable fingerprint from other fields
-    if (r.link) return `k:${r.link}`;
-    const parts = [r.title, r.company, r.location, r.type, r.salary]
-        .map(v => (v || '').toString().trim().toLowerCase());
-    return `k:${parts.join('|')}`;
-}
+        // Normalize link if present: remove ?query and #hash, strip trailing slash, lowercase
+        const rawLink = (r.link || '').toString().trim();
+        const linkBase = rawLink
+            ? rawLink.split(/[?#]/)[0].replace(/\/+$/, '').toLowerCase()
+            : '';
+
+        if (linkBase) return `k:${linkBase}`;
+
+        // Fallback: stable fingerprint from other fields
+        const parts = [r.title, r.company, r.location, r.type, r.salary]
+            .map(v => (v || '').toString().trim().toLowerCase());
+        return `k:${parts.join('|')}`;
+    }
+
 
     async fetchPage() {
         this.loading = true;

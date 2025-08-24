@@ -46,12 +46,12 @@
         <!-- Results table: rows come from Apex and can be selected-->
          <template if:true={rows.length}>
             <lightning-datatable
+                key={page}
                 key-field="_key"
                 data={rows}
                 columns={columns}
                 onrowselection={handleSelection}
-                selected-rows={selectedRowKeys}
-                max-row-selection="25">
+                selected-rows={selectedRowKeys}>
             </lightning-datatable>
 
             <div class="slds-m-top_small slds-grid slds-grid_align-spread slds-p-horizontal_small">
