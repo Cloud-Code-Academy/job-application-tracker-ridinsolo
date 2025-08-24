@@ -13,7 +13,6 @@ export default class JoobleJobFinder extends LightningElement {
 
     // results + ui state
     @track rows = [];
-    @track selectedRows = [];
     @track errorMessage = '';
     @track loading = false;
 
@@ -55,10 +54,13 @@ export default class JoobleJobFinder extends LightningElement {
         }
     }
 
-    // Define method that runs when user clicks search button in HTML
+    // Search button resets page and clears selection, then fetches
     async search() {
         if (this.page !== 1) this.page = 1;
         this.selectedCache.clear(); // clear old selections on new search
+        await this.fetchPage(); // call the shared fetcher
+    }
+    async fetchPage() {
         this.loading = true;
         this.errorMessage = '';
         try {
@@ -77,6 +79,7 @@ export default class JoobleJobFinder extends LightningElement {
                 ...r,
                 _key: r.link ? `k:${r.link}` : `k:${pageNum}:${i}:${Math.random().toString(36).slice(2)}`
             }));
+            
             this.totalCount = result?.totalCount || 0;
             this.syncSelectedRowKeys(); // keep previously selected rows checked
         } catch (error) {
@@ -84,6 +87,18 @@ export default class JoobleJobFinder extends LightningElement {
         } finally {
             this.loading = false;
         }
+    }
+
+    // Paging calls fetchPage()
+    async nextPage() {
+        if (this.disableNext) return;
+        this.page += 1;
+        await this.fetchPage();
+    }
+    async prevPage() {
+        if (this.disablePrev) return;
+        this.page = Math.max(1, this.page - 1);
+        await this.fetchPage();
     }
    
         handleSelection(event) {
@@ -109,7 +124,6 @@ export default class JoobleJobFinder extends LightningElement {
         get disableCreate() {
             return this.loading || this.selectedCache.size === 0;
         }
-
         // Compute pages and wire up Next/Prev buttons
         get totalPages() {
             return Math.max(1, Math.ceil((this.totalCount || 0) / this.pageSize));
@@ -119,17 +133,6 @@ export default class JoobleJobFinder extends LightningElement {
         }
         get disableNext() {
             return this.loading || this.page >= this.totalPages;
-        }
-
-        async nextPage() {
-            if (this.disableNext) return;
-            this.page += 1;
-            await this.search();
-        }
-        async prevPage() {
-            if (this.disablePrev) return;
-            this.page = Math.max(1, this.page - 1);
-            await this.search();
         }
 
         // Method to create job apps from selected rows across pages
@@ -170,6 +173,7 @@ export default class JoobleJobFinder extends LightningElement {
         this.dispatchEvent(new ShowToastEvent({title, message, variant}));
     }
 }
+
 
 
     
