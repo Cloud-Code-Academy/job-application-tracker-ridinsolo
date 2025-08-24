@@ -60,6 +60,15 @@ export default class JoobleJobFinder extends LightningElement {
         this.selectedCache.clear(); // clear old selections on new search
         await this.fetchPage(); // call the shared fetcher
     }
+
+    makeKey(r) {
+    // Prefer link; else build a stable fingerprint from other fields
+    if (r.link) return `k:${r.link}`;
+    const parts = [r.title, r.company, r.location, r.type, r.salary]
+        .map(v => (v || '').toString().trim().toLowerCase());
+    return `k:${parts.join('|')}`;
+}
+
     async fetchPage() {
         this.loading = true;
         this.errorMessage = '';
@@ -73,11 +82,10 @@ export default class JoobleJobFinder extends LightningElement {
             });
             // Apex should return {totalCount, jobs}
             // Build stable keys for this page (don’t rely on link being unique or present)
-            const pageNum = this.page;
             const rawRows = result?.jobs || [];
-            this.rows = rawRows.map((r, i) => ({
+            this.rows = rawRows.map(r => ({
                 ...r,
-                _key: r.link ? `k:${r.link}` : `k:${pageNum}:${i}:${Math.random().toString(36).slice(2)}`
+                _key: this.makeKey(r)
             }));
             
             this.totalCount = result?.totalCount || 0;
