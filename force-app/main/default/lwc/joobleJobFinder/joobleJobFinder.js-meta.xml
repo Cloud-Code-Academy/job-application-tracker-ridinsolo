@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>63.0</apiVersion>
+    <!-- Expose in Lightning App Builder palette -->
     <isExposed>true</isExposed>
+    <!-- Label shown to admins in the Builder -->
     <masterLabel>Jooble Job Finder</masterLabel>
+    <!-- Page types where the component can be placed -->
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>
