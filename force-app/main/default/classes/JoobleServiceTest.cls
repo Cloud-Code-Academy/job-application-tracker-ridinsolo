@@ -1,11 +1,12 @@
 @IsTest
 private class JoobleServiceTest {
-    // Create test only custom metadata so getApiKey works
+    // Inject a fake API key so getAPIKey() doesn't fail when trying to access API key field in custom metadata
     @testSetup
     static void setupCmt() {
         JoobleService.apiKeyOverride = 'abc123';
     }
 
+    // Mock sends a 200 OK but with invalid JSON structure to simulate bad API response and make sure we catch it
     private class JoobleMockBadJson implements HttpCalloutMock {
     public HttpResponse respond(HttpRequest req) {
         HttpResponse r = new HttpResponse();
