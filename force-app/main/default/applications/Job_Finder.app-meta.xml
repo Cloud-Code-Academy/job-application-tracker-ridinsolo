@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description>App to keep track of Job Applications and find jobs using Jooble.</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <label>Job Finder</label>
+    <navType>Standard</navType>
+    <tabs>Job_Application__c</tabs>
+    <tabs>Jooble_Job_Finder</tabs>
+    <tabs>Job_Application_Contact__c</tabs>
+    <tabs>standard-Account</tabs>
+    <uiType>Lightning</uiType>
+    <utilityBar>Job_Finder_UtilityBar</utilityBar>
+</CustomApplication>
