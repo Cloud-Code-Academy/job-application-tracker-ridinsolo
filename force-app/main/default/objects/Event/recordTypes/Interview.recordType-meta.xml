@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Interview</fullName>
+    <active>true</active>
+    <description>Record type used for events that are interviews.</description>
+    <label>Interview</label>
+    <picklistValues>
+        <picklist>Interview_Format__c</picklist>
+        <values>
+            <fullName>Chat-Based</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Hybrid</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>In-Person</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Online Assessment</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Onsite %28Full Day%29</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Phone Call</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Pre-Recorded Video</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Video Call</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Interview_Type__c</picklist>
+        <values>
+            <fullName>Final Interview</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Group Interview</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Hiring Manager Interview</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Offer Discussion</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Phone Screen</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Technical Interview</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Subject</picklist>
+        <values>
+            <fullName>Call</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Email</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Meeting</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Other</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Send Letter%2FQuote</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Type</picklist>
+        <values>
+            <fullName>Call</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Email</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Meeting</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Other</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>
