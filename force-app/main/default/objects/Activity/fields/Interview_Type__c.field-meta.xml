@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Interview_Type__c</fullName>
+    <description>Picklist to select the stage or purpose of the interview (e.g., phone screen, technical interview, final interview).</description>
+    <externalId>false</externalId>
+    <label>Interview Type</label>
+    <required>false</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Phone Screen</fullName>
+                <default>false</default>
+                <label>Phone Screen</label>
+            </value>
+            <value>
+                <fullName>Technical Interview</fullName>
+                <default>false</default>
+                <label>Technical Interview</label>
+            </value>
+            <value>
+                <fullName>Hiring Manager Interview</fullName>
+                <default>false</default>
+                <label>Hiring Manager Interview</label>
+            </value>
+            <value>
+                <fullName>Group Interview</fullName>
+                <default>false</default>
+                <label>Group Interview</label>
+            </value>
+            <value>
+                <fullName>Final Interview</fullName>
+                <default>false</default>
+                <label>Final Interview</label>
+            </value>
+            <value>
+                <fullName>Offer Discussion</fullName>
+                <default>false</default>
+                <label>Offer Discussion</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,167 @@
+public with sharing class JoobleService {
+    // Data Transfer Object with fields as properties to carry data to and from LWC
+    public class JobDTO {
+        @AuraEnabled public String title {get; set;}
+        @AuraEnabled public String company {get; set;}
+        @AuraEnabled public String salary {get; set;}
+        @AuraEnabled public String link {get; set;}
+        @AuraEnabled public String location {get; set;}
+        @AuraEnabled public String snippet {get; set;}
+        @AuraEnabled public String type {get; set;}
+    }
+    // Holds what is sent to Jooble from LWC inputs
+    private class RequestBody {
+        public String keywords; 
+        public String location; 
+        public Integer salary;
+        public String page; // page number as a string, ie "1"
+        public Integer resultonpage; // jobs per page
+    }
+
+    // Object to deserialize (turn JSON string into Apex Object) the response into
+    private class ResponseBody {
+        public Integer totalCount;
+        public List<JobDTO> jobs;  // This is what the LWC renders
+    }
+
+    public class SearchResultDTO {
+        @AuraEnabled public Integer totalCount;
+        @AuraEnabled public List<JobDTO> jobs;
+     }
+
+    // Reads Jooble API key from custom metadata
+    @TestVisible private static String apiKeyOverride;
+
+    private static String getApiKey() {
+        if (Test.isRunningTest() && apiKeyOverride != null) {
+            return apiKeyOverride;
+        }
+        Jooble_Config__mdt cfg = [
+            SELECT Api_Key__c
+            FROM Jooble_Config__mdt
+            LIMIT 1
+        ];
+        if (String.isBlank(cfg.Api_Key__c)) {
+            throw new AuraHandledException('Missing Jooble API key in Custom Metadata.');
+        }
+        return cfg.Api_Key__c;
+    }
+
+    // Remove HTML tags from Jooble Text
+    private static String cleanHtml(String s) {
+        if (String.isBlank(s)) return s;
+        String out = s;
+
+        // Unescape common html
+        out = out.replace('&nbsp;', ' ')
+             .replace('&amp;', '&')
+             .replace('&lt;', '<')
+             .replace('&gt;', '>')
+             .replace('&quot;', '"')
+             .replace('&#39;', '\'');
+
+        // Strip remaining HTML tags
+        out = out.replaceAll('<[^>]+>', '');
+
+        // Collapse whitespace and trim
+        out = out.replaceAll('\\s+', ' ').trim();
+        return out;
+    }
+
+    @AuraEnabled(cacheable=false)
+    // Method that accepts job search filters (keywords, location, salary, etc.)
+    // These values are placed into the RequestBody JSON and sent to Jooble
+    // to retrieve matching jobs. 
+    public static SearchResultDTO searchJobs (
+        // from LWC input
+        String keywords, 
+        String location, 
+        Integer salary,
+        String page,
+        Integer resultOnPage
+    ) {
+        HttpRequest req = new HttpRequest(); // holder for the outbound HTTP request
+        req.setMethod('POST'); // Jooble expects POST
+        
+        req.setHeader('Content-Type', 'application/json'); // tells Jooble request body is JSON
+        req.setTimeout(20000); // avoid hanging longer than 20 seconds
+
+        String key = getApiKey(); // Reads key from Custom Metadata
+        req.setEndpoint('https://jooble.org/api/' + key); // target endpoint, requires Remote Site Setting
+
+        // Take inputs (keywords, location, salary) and map into JSON payload Jooble expects
+        RequestBody body = new RequestBody();
+        body.keywords = String.isBlank(keywords) ? 'Salesforce' : keywords;
+        body.location = String.isBlank(location) ? 'Remote' : location;
+        body.page = String.isBlank(page) ? '1' : page;
+        body.resultonpage = (resultOnPage == null || resultOnPage <= 0) ? 25 : resultOnPage;
+        if (salary != null) body.salary = salary;
+
+        // Convert RequestBody object to JSON and attach to request
+        req.setBody(JSON.serialize(body, true)); // suppress null field so salary is omitted when null
+
+        // Send HTTP POST to Jooble
+        Http http = new Http();
+        HttpResponse res = http.send(req);
+
+        // Handle non-200 responses so LWC shows clear message
+        Integer code = res.getStatusCode();
+        if (code < 200 || code >= 300) {
+            throw new AuraHandledException('Jooble call failed: ' + res.getStatus() + ' - ' + res.getBody());
+        }
+
+        // Take JSON string Jooble returns and convert into ResponseBody Apex Class
+        ResponseBody parsed;
+        try {
+            parsed = (ResponseBody) JSON.deserialize(res.getBody(), ResponseBody.class);
+            if (parsed != null && parsed.jobs != null) {
+                for (JobDTO j : parsed.jobs) {
+                    j.snippet = cleanHtml(j.snippet);
+                }
+            }
+        } catch (Exception ex) {
+            // If JSON isn't what we expected show helpful error
+            throw new AuraHandledException('Could not parse Jooble response; ' + ex.getMessage());
+        }
+
+        // Return totalCount + jobs for the LWC to page
+        SearchResultDTO out = new SearchResultDTO();
+        out.totalCount = (parsed == null ? 0 : parsed.totalCount);
+        out.jobs = (parsed != null && parsed.jobs != null) ? parsed.jobs : new List<JobDTO>();
+        return out;
+    }
+
+    @AuraEnabled
+    public static List<Id> createJobApplications(List<JobDTO> selected) {
+        // Guard in case nothing is chosen from LWC
+        if (selected == null || selected.isEmpty()) {
+            return new List<Id>();
+        }
+    
+    // Map each selected JobDTO to a new Job Application
+    List<Job_Application__c> toInsert = new List<Job_Application__c>();
+
+    for (JobDTO j : selected) {
+        Job_Application__c app = new Job_Application__c();
+
+        // Map Jooble fields to job application fields
+        app.Status__c = 'Saved';
+        app.Source__c = 'Jooble';
+        app.Description__c = 'Company: ' + j.company + ' | Salary: ' + j.salary + '\n' + j.snippet;
+        app.Position_Title__c = j.title;
+        app.Location__c = j.location;
+        app.URL__c = j.link;
+        app.Type__c = j.type;
+        app.OwnerId = UserInfo.getUserId();
+
+        toInsert.add(app);
+    }
+
+    insert toInsert;
+
+    // return the new record Ids
+    List<Id> ids = new List<Id>();
+    for (Job_Application__c a : toInsert) ids.add(a.Id);
+    return ids;
+    }
+}

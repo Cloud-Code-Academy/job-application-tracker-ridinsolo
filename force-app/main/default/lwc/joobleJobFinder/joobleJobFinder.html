@@ -1,0 +1,74 @@
+<template>
+    <lightning-card title="Jooble Job Finder">
+        <div class="slds-p-around_medium slds-grid slds-wrap slds-gutters">
+            <div class="slds-col slds-size_1-of-2 slds-p-right_small">
+                <lightning-input
+                    label="Keywords"
+                    value={keywords}
+                    onchange={handleInput}>
+                </lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-input
+                    label="Location"
+                    value={location}
+                    onchange={handleInput}>
+                </lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-4 slds-p-right_small">
+                <lightning-input
+                    type="number"
+                    label="Minimum Salary"
+                    value={salary}
+                    onchange={handleInput}>
+                </lightning-input>            
+            </div>
+
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+                <lightning-button
+                    variant="brand"
+                    label="Search"
+                    onclick={search}
+                    disabled={loading}>
+                </lightning-button>
+                <lightning-button
+                    class="slds-m-left_small"
+                    label="Create Job Applications from Selected"
+                    onclick={createApps}
+                    disabled={disableCreate}>
+                </lightning-button>
+                <template if:true={loading}>
+                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                </template>
+            </div>
+        </div>
+
+        <!-- Results table: rows come from Apex and can be selected-->
+         <template if:true={rows.length}>
+            <lightning-datatable
+                key={page}
+                key-field="_key"
+                data={rows}        
+                columns={columns}
+                onrowselection={handleSelection}
+                selected-rows={selectedRowKeys}>
+            </lightning-datatable>
+
+            <div class="slds-m-top_small slds-grid slds-grid_align-spread slds-p-horizontal_small">
+                <div>Page {page} of {totalPages} • {totalCount} result(s)</div>
+                <div>
+                    <lightning-button label="Previous" onclick={prevPage} disabled={disablePrev}></lightning-button>
+                    <lightning-button class="slds-m-left_small" label="Next" onclick={nextPage} disabled={disableNext}></lightning-button>
+                </div>
+                </div>
+
+         </template>
+
+         <!-- Simple error display-->
+         <template if:true={errorMessage}>
+            <div class="slds-p-around_medium slds-text-color_error">
+                {errorMessage}
+            </div>
+         </template>
+    </lightning-card>
+</template>
