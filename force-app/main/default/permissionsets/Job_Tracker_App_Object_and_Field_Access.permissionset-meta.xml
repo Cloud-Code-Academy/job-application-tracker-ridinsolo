@@ -517,6 +517,10 @@
         <object>Job_Application__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
+    <recordTypeVisibilities>
+        <recordType>Event.Interview</recordType>
+        <visible>true</visible>
+    </recordTypeVisibilities>
     <tabSettings>
         <tab>Job_Application_Contact__c</tab>
         <visibility>Visible</visibility>
@@ -527,6 +531,10 @@
     </tabSettings>
     <tabSettings>
         <tab>Jooble_Job_Finder</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>standard-Event</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>

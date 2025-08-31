@@ -16,6 +16,7 @@
     <tabs>Jooble_Job_Finder</tabs>
     <tabs>Job_Application_Contact__c</tabs>
     <tabs>standard-Account</tabs>
+    <tabs>standard-Event</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>Job_Finder_UtilityBar</utilityBar>
 </CustomApplication>
